@@ -1,0 +1,24 @@
+name: Generar M3U
+on:
+  push:
+    paths:
+      - 'lLISTA FLOW.txt'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Crear archivo M3U
+        run: |
+          echo "#EXTM3U" > lista.m3u
+          awk '{print "#EXTINF:-1, Canal " NR "\n" $0}' "lLISTA FLOW.txt" >> lista.m3u
+      - name: Subir a GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
