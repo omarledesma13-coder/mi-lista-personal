@@ -1,9 +1,8 @@
-name: Generar M3U
+name: Actualizador Automático Flow
 on:
-  push:
-    paths:
-      - 'lLISTA FLOW.txt'
-  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'  # Se ejecuta solo cada 1 hora
+  workflow_dispatch:      # Permite ejecutarlo a mano para probar
 
 jobs:
   build:
@@ -12,11 +11,22 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v3
-      - name: Crear archivo M3U
-        run: |
-          echo "#EXTM3U" > lista.m3u
-          awk '{print "#EXTINF:-1, Canal " NR "\n" $0}' "lLISTA FLOW.txt" >> lista.m3u
-      - name: Subir a GitHub Pages
+      
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Ejecutar Extractor
+        env:
+          USER: ${{ secrets.FLOW_USER }}
+          PASS: ${{ secrets.FLOW_PASSWORD }}
+        run: python extractor.py
+
+      - name: Publicar lista actualizada
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
